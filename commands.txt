@@ -1,0 +1,93 @@
+dbt Commands
+
+
+run	            --select, --exclude, --selector, --defer
+test	        --select, --exclude, --selector, --defer
+seed	        --select, --exclude, --selector
+snapshot	    --select, --exclude  --selector
+ls (list)	    --select, --exclude, --selector, --resource-type
+compile	        --select, --exclude, --selector, --inline
+freshness	    --select, --exclude, --selector
+build	        --select, --exclude, --selector, --resource-type, --defer
+docs generate	--select, --exclude, --selector
+
+
+-------------------------------------------------------------------------------------------------------------
+running:
+
+dbt run executes compiled sql model files against the current target database.
+dbt connects to the target database and runs the relevant SQL required to materialize
+all data models using the specified materialization strategies.
+Models are run in the order defined by the dependency graph generated during compilation.
+Intelligent multi-threading is used to minimize execution time without violating dependencies.
+
+
+If you provide the --full-refresh flag to dbt run, dbt will treat incremental models as table models. 
+This is useful when:
+
+1. The schema of an incremental model changes and you need to recreate it.
+2. You want to reprocess the entirety of the incremental model because of new logic in the model code.
+
+
+dbt run --select "my_dbt_project_name"   # runs all models in your project
+dbt run --select "my_dbt_model"          # runs a specific model
+dbt run --select "path.to.my.models"     # runs all models in a specific directory
+dbt run --select "my_package.some_model" # run a specific model in a specific package
+dbt run --select "tag:nightly"           # run models with the "nightly" tag
+dbt run --select "path/to/models"        # run models contained in path/to/models
+dbt run --select "path/to/my_model.sql"  # run a specific model by its path
+
+dbt run --select "my_model+"         # select my_model and all children
+dbt run --select "+my_model"         # select my_model and all parents
+dbt run --select "+my_model+"        # select my_model, and all of its parents and children
+
+dbt run --models @my_model           # select my_model, its children, and the parents of its children
+
+
+-------------------------------------------------------------------------------------------------------------
+building:
+
+The dbt build command will:
+
+- run models
+- test tests
+- snapshot snapshots
+- seed seeds
+- In DAG order, for selected resources or an entire project.
+
+
+-------------------------------------------------------------------------------------------------------------
+testing:
+
+Execute dbt test to run all generic and singular tests in your project.
+Execute dbt test --select test_type:generic to run only generic tests in your project.
+Execute dbt test --select test_type:singular to run only singular tests in your project.
+
+Execute dbt test --select source:<source_name> to run tests on your source by name.
+
+
+# run tests for one_specific_model
+dbt test --select "one_specific_model"
+
+# run tests for all models in package
+dbt test --select "some_package.*"
+
+# run only tests defined singularly
+dbt test --select "test_type:singular"
+
+# run only tests defined generically
+dbt test --select "test_type:generic"
+
+# run singular tests limited to one_specific_model
+dbt test --select "one_specific_model,test_type:singular"
+
+# run generic tests limited to one_specific_model
+dbt test --select "one_specific_model,test_type:generic"
+
+dbt source freshness # check freshness of the sources
+
+
+-------------------------------------------------------------------------------------------------------------
+docs:
+
+Execute dbt docs generate from the command line to generate your documentation.
